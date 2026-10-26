@@ -1,0 +1,17 @@
+[worldserver]
+# Global enable/disable
+Sprint.Enabled = true
+# Combat, mounts and PvP instances
+Sprint.AllowCombat = false
+Sprint.AllowMounts = false
+Sprint.AllowBattlegrounds = false
+Sprint.AllowArenas = false
+# Adds 0.5 to current run speed multiplier (50% above normal if baseline is 1.0)
+Sprint.SpeedBonus = 0.5
+# Duration = Base + Factor * log2(1 + character Stamina / Reference), capped
+Sprint.DurationBase = 4.0
+Sprint.DurationLogFactor = 2.5
+Sprint.StaminaReference = 100.0
+Sprint.DurationCap = 17.0
+# Seconds to recover from empty to full while resting
+Sprint.RecoverySeconds = 8.0
