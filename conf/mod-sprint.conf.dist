@@ -15,3 +15,17 @@ Sprint.StaminaReference = 100.0
 Sprint.DurationCap = 17.0
 # Seconds to recover from empty to full while resting
 Sprint.RecoverySeconds = 8.0
+
+# Regeneration scales with current health percentage.
+Sprint.Vitality.Enabled = true
+Sprint.Vitality.MinimumMultiplier = 0.20
+
+# Regeneration rate while fighting.
+Sprint.CombatRecoveryMultiplier = 0.50
+
+# Delay after emptying the sprint meter.
+Sprint.Exhaustion.Enabled = true
+Sprint.Exhaustion.DelaySeconds = 3.0
+
+# Regeneration multiplier while sitting and not fighting.
+Sprint.RestingRecoveryMultiplier = 2.0
