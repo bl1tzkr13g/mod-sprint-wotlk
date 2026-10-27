@@ -3,6 +3,7 @@
 local addon = CreateFrame("Frame", "ModSprintUIFrame", UIParent)
 addon:RegisterEvent("PLAYER_LOGIN")
 addon:RegisterEvent("CHAT_MSG_SYSTEM")
+addon:RegisterEvent("CHAT_MSG_ADDON")
 -- Hide only the server's sprint telemetry, while retaining the event for the meter.
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", function(self, event, message)
     if type(message) == "string" and string.find(message, "^AC_SPRINT:%d+%s*$") then
@@ -212,6 +213,12 @@ addon:SetScript("OnEvent", function(self, event, ...)
         if db.locked == nil then db.locked = true end
         MakeBar()
         CheckBinding()
+    elseif event == "CHAT_MSG_ADDON" then
+        local prefix, payload, distribution, sender = ...
+        if prefix == "ACSPRINT" and distribution == "WHISPER" then
+            local pct = tonumber(payload)
+            if pct then UpdateMeter(pct) end
+        end
     elseif event == "CHAT_MSG_SYSTEM" then
         local message = ...
         local pct = message and string.match(message, "AC_SPRINT:(%d+)")
