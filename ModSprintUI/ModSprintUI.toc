@@ -1,0 +1,6 @@
+## Interface: 30300
+## Title: Sprint UI (Stamina Edition)
+## Notes: Sprint meter, hold-to-sprint, and optional keybinding conflict repair
+## SavedVariablesPerCharacter: ModSprintDB
+
+ModSprintUI.lua
