@@ -30,7 +30,7 @@ inline void Send(Player* p, State const& state)
     // appear in the player's chat window.
     WorldPacket packet;
     ChatHandler::BuildChatPacket(packet, CHAT_MSG_WHISPER, LANG_ADDON,
-        p, p, "ACSPRINT\\t" + std::to_string(pct));
+        p, p, "ACSPRINT\t" + std::to_string(pct));
     p->GetSession()->SendPacket(&packet);
 }
 inline void Stop(Player* p, State& state)
