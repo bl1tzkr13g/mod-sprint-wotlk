@@ -26,7 +26,12 @@ inline void Send(Player* p, State const& state)
 {
     if (!p || !p->GetSession()) return;
     int pct = std::clamp(static_cast<int>(std::round(state.energy * 100.0f)), 0, 100);
-    ChatHandler(p->GetSession()).SendSysMessage(("AC_SPRINT:" + std::to_string(pct)).c_str());
+    // Send private addon-channel telemetry; unlike system messages this does not
+    // appear in the player's chat window.
+    WorldPacket packet;
+    ChatHandler::BuildChatPacket(packet, CHAT_MSG_WHISPER, LANG_ADDON,
+        p, p, "ACSPRINT\\t" + std::to_string(pct));
+    p->GetSession()->SendPacket(&packet);
 }
 inline void Stop(Player* p, State& state)
 {
