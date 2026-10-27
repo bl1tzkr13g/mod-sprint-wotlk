@@ -3,6 +3,13 @@
 local addon = CreateFrame("Frame", "ModSprintUIFrame", UIParent)
 addon:RegisterEvent("PLAYER_LOGIN")
 addon:RegisterEvent("CHAT_MSG_SYSTEM")
+-- Hide only the server's sprint telemetry, while retaining the event for the meter.
+ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", function(self, event, message)
+    if type(message) == "string" and string.find(message, "^AC_SPRINT:%d+%s*$") then
+        return true
+    end
+    return false
+end)
 addon:RegisterEvent("MODIFIER_STATE_CHANGED")
 addon:RegisterEvent("PLAYER_REGEN_ENABLED")
 local db, bar, fill, label
