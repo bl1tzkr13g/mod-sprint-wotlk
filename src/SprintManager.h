@@ -13,6 +13,7 @@ struct State
     float baselineSpeed = 1.0f;
     uint32 elapsedMs = 0;
     bool running = false;
+    float exhaustionSeconds = 0.0f;
 };
 inline std::unordered_map<uint32, State>& States()
 {
@@ -41,7 +42,7 @@ inline bool Start(Player* p)
 {
     if (!Allowed(p)) return false;
     State& state = Get(p);
-    if (state.running || state.energy <= 0.01f) return false;
+    if (state.running || state.energy <= 0.01f || state.exhaustionSeconds > 0.0f) return false;
     state.baselineSpeed = p->GetSpeedRate(MOVE_RUN);
     float bonus = std::max(0.0f, sConfigMgr->GetOption<float>("Sprint.SpeedBonus", 0.5f));
     p->SetSpeed(MOVE_RUN, state.baselineSpeed + bonus, true);
@@ -57,12 +58,38 @@ inline void Tick(Player* p, uint32 diff)
     if (state.running)
     {
         state.energy = std::max(0.0f, state.energy - seconds / duration);
-        if (state.energy <= 0.0f) Stop(p, state);
+        if (state.energy <= 0.0f)
+        {
+            Stop(p, state);
+            if (sConfigMgr->GetOption<bool>("Sprint.Exhaustion.Enabled", true))
+                state.exhaustionSeconds = std::max(0.0f, sConfigMgr->GetOption<float>("Sprint.Exhaustion.DelaySeconds", 3.0f));
+        }
     }
-    else
+    else if (state.exhaustionSeconds > 0.0f)
+    {
+        // Consume the delay first. A large server tick may also contain recovery time.
+        float delayConsumed = std::min(seconds, state.exhaustionSeconds);
+        state.exhaustionSeconds -= delayConsumed;
+        seconds -= delayConsumed;
+    }
+    if (!state.running && state.exhaustionSeconds <= 0.0f && seconds > 0.0f)
     {
         float recovery = std::max(0.1f, sConfigMgr->GetOption<float>("Sprint.RecoverySeconds", 8.0f));
-        state.energy = std::min(1.0f, state.energy + seconds / recovery);
+        float multiplier = 1.0f;
+
+        // Vitality uses current health percentage, not the Stamina attribute.
+        if (sConfigMgr->GetOption<bool>("Sprint.Vitality.Enabled", true))
+        {
+            float hp = std::clamp(p->GetHealthPct() / 100.0f, 0.0f, 1.0f);
+            float minimum = std::clamp(sConfigMgr->GetOption<float>("Sprint.Vitality.MinimumMultiplier", 0.2f), 0.0f, 1.0f);
+            multiplier *= minimum + (1.0f - minimum) * hp;
+        }
+        if (p->IsInCombat())
+            multiplier *= std::max(0.0f, sConfigMgr->GetOption<float>("Sprint.CombatRecoveryMultiplier", 0.5f));
+        if (p->IsSitState() && !p->IsInCombat())
+            multiplier *= std::max(0.0f, sConfigMgr->GetOption<float>("Sprint.RestingRecoveryMultiplier", 2.0f));
+
+        state.energy = std::min(1.0f, state.energy + (seconds / recovery) * multiplier);
     }
     state.elapsedMs += diff;
     if (state.elapsedMs >= 250)
